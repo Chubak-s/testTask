@@ -139,9 +139,17 @@ async function displayList(numOfPage, option, value){
         const unique_items_info = uniqueArray(items_info)
         cards(unique_items_info)
     } else if (option === 'filter_product'){
-        console.log()
+        dataId = await filterFetchData('product', value);
+        const dataIdOfPage = spreadFilteredData(dataId);
+        const items_info = await get_items(dataIdOfPage[numOfPage-1]);
+        const unique_items_info = uniqueArray(items_info)
+        cards(unique_items_info)
     } else if (option === 'filter_brand'){
-        console.log()
+        dataId = await filterFetchData('brand', value);
+        const dataIdOfPage = spreadFilteredData(dataId);
+        const items_info = await get_items(dataIdOfPage[numOfPage-1]);
+        const unique_items_info = uniqueArray(items_info)
+        cards(unique_items_info)
     } else {
         console.log('error in option')
     }
@@ -181,9 +189,89 @@ function displayPaginationBtn(pagesBtn, direction, numOfPage){
         displayPagination(numOfPage+direction)
     });
 }
+function displayPaginationFilter(numOfPage, value){
+    const pagination = document.getElementById('pagination');
+    const pagesBtnNext = document.createElement("div");
+    const pagesBtnCur = document.createElement("div");
+    const pagesBtnPrev = document.createElement("div");
+    if (numOfPage!==1){
+        pagesBtnPrev.innerText=`<< Предыдущая`;
+        pagesBtnPrev.classList.add('pagination__item-prev');
+        pagination.appendChild(pagesBtnPrev);
+        displayPaginationBtnFilter(pagesBtnPrev, -1, numOfPage, value)
+    } else {
+        pagesBtnPrev.innerText=``;
+        pagesBtnPrev.classList.add('pagination__item-prev')
+        pagination.appendChild(pagesBtnPrev)
+    }
+    pagesBtnCur.innerText=`${numOfPage} стр`;
+    pagesBtnCur.classList.add('pagination__item--active');
+    pagesBtnNext.innerText=`Следующая >>`;
+    pagesBtnNext.classList.add('pagination__item-next');
+    pagination.appendChild(pagesBtnCur);
+    pagination.appendChild(pagesBtnNext);
+    displayPaginationBtnFilter(pagesBtnNext, 1, numOfPage, value)
+}
+
+function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value){
+    pagesBtn.addEventListener("click", ()=>{
+
+        const cardContainer = document.getElementById('card-container');
+        cardContainer.innerHTML=``;
+        displayList(numOfPage+direction, 'filter_price', value);
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML=``;
+        displayPaginationFilter(numOfPage+direction, value)
+    });
+}
 
 function chooseOption(){ //выбрать фильтр или стандартный id список для displayList
 
+}
+function getValuePriceFilter() {
+    const input = document.getElementById("price_to");
+    const priceBtn = document.getElementById("price_btn")
+    priceBtn.addEventListener("click", (event)=>{
+        event.preventDefault();
+        const value = input.value;
+        console.log(value);
+        const cardContainer = document.getElementById('card-container');
+        cardContainer.innerHTML = ``;
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = ``;
+        displayList(1, 'filter_price',value);
+        displayPaginationFilter(1, value);
+    })
+}
+
+function getValueBrandFilter(obj) {
+    obj.addEventListener("click", (event)=>{
+        event.preventDefault();
+        const cardContainer = document.getElementById('card-container');
+        cardContainer.innerHTML = ``;
+        console.log(obj.textContent);
+        displayList(1, 'filter_brand',obj.textContent);
+    })
+}
+
+function getValueProductFilter() {
+    const input = document.getElementById("product-name");
+    const productBtn = document.getElementById("product_btn")
+    productBtn.addEventListener("click", (event)=>{
+        event.preventDefault();
+        const value = input.value;
+        console.log(value);
+        const cardContainer = document.getElementById('card-container');
+        cardContainer.innerHTML = ``;
+        displayList(1, 'filter_product',value);
+    })
+}
+
+function deleteFilters(){
+    const deleteFilterButton = document.getElementById('deleteFilter');
+    deleteFilterButton.addEventListener('click', ()=>{
+        location.reload();
+    })
 }
 
 function filterControlPanel(){ //панель фильтра
@@ -193,10 +281,24 @@ function filterControlPanel(){ //панель фильтра
     const brandsSet = document.getElementById('brandsSet');
     const productButton = document.getElementById('productBtn');
     const productSet = document.getElementById('productSet');
+    let priceDoubleClick = 0;
     let brandDoubleClick = 0;
+    let productDoubleClick = 0;
+    const funcDoubleClick = function (typeDoubleClick, Button){
+        if (typeDoubleClick === 0){
+            Button.classList.remove('activeBtn')
+        }
+    }
+    const clearBrandList = function (typeDoubleClick, brandList) {
+        if (typeDoubleClick === 0){
+            brandList.innerHTML=``;
+        }
+    }
     priceButton.addEventListener('click', function() {
-        // menuButton.classList.add('activeBtn');
+        priceButton.classList.add('activeBtn');
         priceSet.style.display = (priceSet.style.display === 'block') ? 'none' : 'block';
+        priceDoubleClick = (priceDoubleClick === 1) ? 0:1;
+        funcDoubleClick(priceDoubleClick, priceButton)
     });
     brandsButton.addEventListener('click', async function () {
         let fetchedBrandLists = await brandList();
@@ -204,19 +306,21 @@ function filterControlPanel(){ //панель фильтра
         const brandsList = document.getElementById('brandsList');
         for (let value of fetchedBrandLists) {
             let div = document.createElement("div");
+            div.classList.add("brandName")
             div.textContent = value;
             brandsList.appendChild(div);
+            getValueBrandFilter(div);
         }
         brandDoubleClick = (brandDoubleClick === 1) ? 0:1;
-        if (brandDoubleClick === 0){
-            brandsList.innerHTML=``;
-            brandsButton.classList.remove('activeBtn')
-        }
+        clearBrandList(brandDoubleClick, brandsList);
+        funcDoubleClick(brandDoubleClick, brandsButton)
         brandsSet.style.display = (brandsSet.style.display === 'block') ? 'none' : 'block';
     });
     productButton.addEventListener('click', function() {
-        // menuButton.classList.add('activeBtn');
         productSet.style.display = (productSet.style.display === 'block') ? 'none' : 'block';
+        productButton.classList.add('activeBtn');
+        productDoubleClick = (productDoubleClick === 1) ? 0:1;
+        funcDoubleClick(productDoubleClick, productButton)
     });
 }
 
@@ -260,5 +364,6 @@ const d = String(currDate.getUTCDate()).padStart(2, '0');
 
 displayList(1, 'get_ids')
 displayPagination(1)
-
+getValuePriceFilter()
 filterControlPanel();
+deleteFilters();

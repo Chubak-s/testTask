@@ -77,6 +77,7 @@ body {
     display: flex;
     justify-content: space-between;
     padding: 20px;
+    height: 80px;
 }
 .id{
     font-weight: 300;
@@ -90,17 +91,20 @@ body {
     font-weight: 400;
     font-size: 12px;
 }
-#price, #brands, #product{
+.formFilter{
     width: 20%;
     display: inline-block;
     position: relative;
     border: 1px solid #284b63;
 }
 
-.priceBtn:hover, .brandsBtn:hover, .productBtn:hover{
+.btnFilter:hover{
     background: #3c6e71;
     font-weight: 600;
     transition:  0.3s ease;
+}
+#deleteFilter:hover{
+    background: red;
 }
 .activeBtn{
     background: #3c6e71;
@@ -117,7 +121,7 @@ body {
 #priceSet.active, #productSet.active, #brandsSet.active {
     display: block;
 }
-.priceBtn, .productBtn, .brandsBtn{
+.btnFilter{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,6 +135,7 @@ body {
     border: 2px solid #3c6e71;
     background-color: #ffffff;
 }
-.price_btn{
-
+.brandName:hover{
+    font-weight: 600;
+    cursor: pointer;
 }
