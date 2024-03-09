@@ -124,32 +124,47 @@ function cards(data){
         cardContainer.appendChild(card);
     }
 }
+
 async function displayList(numOfPage, option, value){
     let dataId = [];
     if (option === 'get_ids'){
         dataId = await fetchData(numOfPage);
         const items_info = await get_items(dataId);
-        const unique_items_info = uniqueArray(items_info)
-        console.log(unique_items_info)
+        const unique_items_info = uniqueArray(items_info);
         cards(unique_items_info)
     } else if (option === 'filter_price'){
         dataId = await filterFetchData('price', parseInt(value));
         const dataIdOfPage = spreadFilteredData(dataId);
-        const items_info = await get_items(dataIdOfPage[numOfPage-1]);
-        const unique_items_info = uniqueArray(items_info)
-        cards(unique_items_info)
+        len = dataIdOfPage.length;
+        if (len === 0){
+            EmptyList()
+        } else {
+            const items_info = await get_items(dataIdOfPage[numOfPage-1]);
+            const unique_items_info = uniqueArray(items_info)
+            cards(unique_items_info)
+        }
     } else if (option === 'filter_product'){
         dataId = await filterFetchData('product', value);
         const dataIdOfPage = spreadFilteredData(dataId);
-        const items_info = await get_items(dataIdOfPage[numOfPage-1]);
-        const unique_items_info = uniqueArray(items_info)
-        cards(unique_items_info)
+        len = dataIdOfPage.length;
+        if (len === 0){
+            EmptyList()
+        } else {
+            const items_info = await get_items(dataIdOfPage[numOfPage-1]);
+            const unique_items_info = uniqueArray(items_info)
+            cards(unique_items_info)
+        }
     } else if (option === 'filter_brand'){
         dataId = await filterFetchData('brand', value);
         const dataIdOfPage = spreadFilteredData(dataId);
-        const items_info = await get_items(dataIdOfPage[numOfPage-1]);
-        const unique_items_info = uniqueArray(items_info)
-        cards(unique_items_info)
+        len = dataIdOfPage.length;
+        if (len === 0){
+            EmptyList()
+        } else {
+            const items_info = await get_items(dataIdOfPage[numOfPage-1]);
+            const unique_items_info = uniqueArray(items_info)
+            cards(unique_items_info)
+        }
     } else {
         console.log('error in option')
     }
@@ -189,8 +204,9 @@ function displayPaginationBtn(pagesBtn, direction, numOfPage){
         displayPagination(numOfPage+direction)
     });
 }
-function displayPaginationFilter(numOfPage, value){
+function displayPaginationFilter(numOfPage, value, len){
     const pagination = document.getElementById('pagination');
+    pagination.innerHTML=``;
     const pagesBtnNext = document.createElement("div");
     const pagesBtnCur = document.createElement("div");
     const pagesBtnPrev = document.createElement("div");
@@ -204,13 +220,21 @@ function displayPaginationFilter(numOfPage, value){
         pagesBtnPrev.classList.add('pagination__item-prev')
         pagination.appendChild(pagesBtnPrev)
     }
+
     pagesBtnCur.innerText=`${numOfPage} стр`;
     pagesBtnCur.classList.add('pagination__item--active');
-    pagesBtnNext.innerText=`Следующая >>`;
-    pagesBtnNext.classList.add('pagination__item-next');
     pagination.appendChild(pagesBtnCur);
-    pagination.appendChild(pagesBtnNext);
-    displayPaginationBtnFilter(pagesBtnNext, 1, numOfPage, value)
+
+    if (numOfPage >= len){
+        pagesBtnNext.innerText=``;
+        pagesBtnNext.classList.add('pagination__item-next');
+        pagination.appendChild(pagesBtnNext);
+    } else {
+        pagesBtnNext.innerText=`Следующая >>`;
+        pagesBtnNext.classList.add('pagination__item-next');
+        pagination.appendChild(pagesBtnNext);
+        displayPaginationBtnFilter(pagesBtnNext, 1, numOfPage, value)
+    }
 }
 
 function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value){
@@ -221,26 +245,29 @@ function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value){
         displayList(numOfPage+direction, 'filter_price', value);
         const pagination = document.getElementById('pagination');
         pagination.innerHTML=``;
-        displayPaginationFilter(numOfPage+direction, value)
+        displayPaginationFilter(numOfPage+direction, value, len)
     });
 }
 
-function chooseOption(){ //выбрать фильтр или стандартный id список для displayList
-
+function EmptyList(){ //выбрать фильтр или стандартный id список для displayList
+    const cardContainer = document.getElementById('card-container');
+    cardContainer.innerHTML = ``;
+    const text = document.createElement('div')
+    text.textContent = 'Товаров по подобранному фильтру не найдено'
+    cardContainer.appendChild(text)
 }
 function getValuePriceFilter() {
     const input = document.getElementById("price_to");
     const priceBtn = document.getElementById("price_btn")
-    priceBtn.addEventListener("click", (event)=>{
+    priceBtn.addEventListener("click", async (event)=>{
         event.preventDefault();
         const value = input.value;
-        console.log(value);
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
         const pagination = document.getElementById('pagination');
         pagination.innerHTML = ``;
-        displayList(1, 'filter_price',value);
-        displayPaginationFilter(1, value);
+        await displayList(1, 'filter_price',value);
+        displayPaginationFilter(1, value, len);
     })
 }
 
@@ -249,8 +276,8 @@ function getValueBrandFilter(obj) {
         event.preventDefault();
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
-        console.log(obj.textContent);
         displayList(1, 'filter_brand',obj.textContent);
+        displayPaginationFilter(1, obj.textContent, len);
     })
 }
 
@@ -260,10 +287,10 @@ function getValueProductFilter() {
     productBtn.addEventListener("click", (event)=>{
         event.preventDefault();
         const value = input.value;
-        console.log(value);
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
         displayList(1, 'filter_product',value);
+        displayPaginationFilter(1, value, len);
     })
 }
 
@@ -360,10 +387,11 @@ const currDate = new Date();
 const y = currDate.getUTCFullYear();
 const m = String(currDate.getUTCMonth() + 1).padStart(2, '0');
 const d = String(currDate.getUTCDate()).padStart(2, '0');
-
+let len; //длина массива ID товаров подобранных по фильтру
 
 displayList(1, 'get_ids')
 displayPagination(1)
 getValuePriceFilter()
+getValueProductFilter()
 filterControlPanel();
 deleteFilters();
