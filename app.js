@@ -194,11 +194,11 @@ function displayPagination(numOfPage){
     displayPaginationBtn(pagesBtnNext, 1, numOfPage)
 }
 function displayPaginationBtn(pagesBtn, direction, numOfPage){
-    pagesBtn.addEventListener("click", ()=>{
+    pagesBtn.addEventListener("click", async ()=>{
 
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML=``;
-        displayList(numOfPage+direction, 'get_ids');
+        await displayList(numOfPage+direction, 'get_ids');
         const pagination = document.getElementById('pagination');
         pagination.innerHTML=``;
         displayPagination(numOfPage+direction)
@@ -238,11 +238,11 @@ function displayPaginationFilter(numOfPage, value, len){
 }
 
 function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value){
-    pagesBtn.addEventListener("click", ()=>{
+    pagesBtn.addEventListener("click", async ()=>{
 
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML=``;
-        displayList(numOfPage+direction, 'filter_price', value);
+        await displayList(numOfPage+direction, 'filter_price', value);
         const pagination = document.getElementById('pagination');
         pagination.innerHTML=``;
         displayPaginationFilter(numOfPage+direction, value, len)
