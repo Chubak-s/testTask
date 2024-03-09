@@ -272,11 +272,11 @@ function getValuePriceFilter() {
 }
 
 function getValueBrandFilter(obj) {
-    obj.addEventListener("click", (event)=>{
+    obj.addEventListener("click", async(event)=>{
         event.preventDefault();
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
-        displayList(1, 'filter_brand',obj.textContent);
+        await displayList(1, 'filter_brand',obj.textContent);
         displayPaginationFilter(1, obj.textContent, len);
     })
 }
@@ -284,12 +284,12 @@ function getValueBrandFilter(obj) {
 function getValueProductFilter() {
     const input = document.getElementById("product-name");
     const productBtn = document.getElementById("product_btn")
-    productBtn.addEventListener("click", (event)=>{
+    productBtn.addEventListener("click", async (event)=>{
         event.preventDefault();
         const value = input.value;
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
-        displayList(1, 'filter_product',value);
+        await displayList(1, 'filter_product',value);
         displayPaginationFilter(1, value, len);
     })
 }
