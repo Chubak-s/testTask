@@ -26,6 +26,7 @@ function fetchData(numOfPages) {
         })
         .catch(error => {
             console.log(error);
+            displayError();
             return 0;
         });
 }
@@ -72,6 +73,7 @@ function filterFetchData(category, value) {
         })
         .catch(error => {
             console.log(error);
+            displayError();
             return 0;
         });
 }
@@ -93,6 +95,11 @@ function get_items(dataId) {
             const resultMassive = [];
             data.result.forEach(item => resultMassive.push(item));
             return resultMassive;
+        })
+        .catch(error => {
+            console.log(error);
+            displayError();
+            return 0;
         });
 }
 
@@ -147,6 +154,8 @@ async function displayList(numOfPage, option, value){
         dataId = await filterFetchData('product', value);
         const dataIdOfPage = spreadFilteredData(dataId);
         len = dataIdOfPage.length;
+        console.log(dataIdOfPage)
+        console.log(len)
         if (len === 0){
             EmptyList()
         } else {
@@ -167,7 +176,15 @@ async function displayList(numOfPage, option, value){
         }
     } else {
         console.log('error in option')
+        displayError();
     }
+}
+function displayError(){
+    const cardContainer = document.getElementById('card-container');
+    cardContainer.innerHTML = ``;
+    const text = document.createElement('div')
+    text.textContent = 'Ошибка на сервере, перезагрузите страницу'
+    cardContainer.appendChild(text)
 }
 
 function displayPagination(numOfPage){
@@ -204,7 +221,7 @@ function displayPaginationBtn(pagesBtn, direction, numOfPage){
         displayPagination(numOfPage+direction)
     });
 }
-function displayPaginationFilter(numOfPage, value, len){
+function displayPaginationFilter(numOfPage, value, len,option){
     const pagination = document.getElementById('pagination');
     pagination.innerHTML=``;
     const pagesBtnNext = document.createElement("div");
@@ -233,19 +250,19 @@ function displayPaginationFilter(numOfPage, value, len){
         pagesBtnNext.innerText=`Следующая >>`;
         pagesBtnNext.classList.add('pagination__item-next');
         pagination.appendChild(pagesBtnNext);
-        displayPaginationBtnFilter(pagesBtnNext, 1, numOfPage, value)
+        displayPaginationBtnFilter(pagesBtnNext, 1, numOfPage, value, option)
     }
 }
 
-function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value){
+function displayPaginationBtnFilter(pagesBtn, direction, numOfPage, value, option){
     pagesBtn.addEventListener("click", async ()=>{
 
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML=``;
-        await displayList(numOfPage+direction, 'filter_price', value);
+        await displayList(numOfPage+direction, option, value);
         const pagination = document.getElementById('pagination');
         pagination.innerHTML=``;
-        displayPaginationFilter(numOfPage+direction, value, len)
+        displayPaginationFilter(numOfPage+direction, value, len, option)
     });
 }
 
@@ -267,7 +284,7 @@ function getValuePriceFilter() {
         const pagination = document.getElementById('pagination');
         pagination.innerHTML = ``;
         await displayList(1, 'filter_price',value);
-        displayPaginationFilter(1, value, len);
+        displayPaginationFilter(1, value, len,'filter_price');
     })
 }
 
@@ -277,7 +294,7 @@ function getValueBrandFilter(obj) {
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
         await displayList(1, 'filter_brand',obj.textContent);
-        displayPaginationFilter(1, obj.textContent, len);
+        displayPaginationFilter(1, obj.textContent, len, 'filter_brand');
     })
 }
 
@@ -290,7 +307,7 @@ function getValueProductFilter() {
         const cardContainer = document.getElementById('card-container');
         cardContainer.innerHTML = ``;
         await displayList(1, 'filter_product',value);
-        displayPaginationFilter(1, value, len);
+        displayPaginationFilter(1, value, len, 'filter_product');
     })
 }
 
@@ -378,6 +395,7 @@ function brandList(){
         })
         .catch(error => {
             console.log(error);
+            displayError();
             return 0;
         });
 }
